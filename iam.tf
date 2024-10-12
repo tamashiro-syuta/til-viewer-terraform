@@ -17,7 +17,7 @@ resource "aws_iam_policy" "s3_operate_policy" {
           "s3:GetObject",
           "s3:ListBucket"
         ]
-        Effect   = "Allow"
+        Effect = "Allow"
         Resource = [
           "${aws_s3_bucket.til-viewer.arn}",
           "${aws_s3_bucket.til-viewer.arn}/*"
@@ -44,6 +44,6 @@ output "github_actions_access_key_id" {
 }
 
 output "github_actions_secret_access_key" {
-  value = aws_iam_access_key.github_actions_access_key.secret
+  value     = aws_iam_access_key.github_actions_access_key.secret
   sensitive = true
 }
