@@ -53,10 +53,10 @@ output "github_actions_secret_access_key" {
 }
 
 # ------------------------------------------------------------
-# NOTE: TIL-Viewerでdynamoからデータをfetchするためのユーザー
+# NOTE: TIL-Viewerで利用するユーザー
 # ------------------------------------------------------------
-resource "aws_iam_user" "til_viewer_dynamodb_read_user" {
-  name = "til_viewer_dynamodb_read_user"
+resource "aws_iam_user" "til_viewer_app_user" {
+  name = "til_viewer_app_user"
 }
 
 resource "aws_iam_policy" "dynamodb_read_policy" {
@@ -80,20 +80,46 @@ resource "aws_iam_policy" "dynamodb_read_policy" {
   })
 }
 
-resource "aws_iam_user_policy_attachment" "til_viewer_dynamodb_read_user_policy" {
-  user       = aws_iam_user.til_viewer_dynamodb_read_user.name
+resource "aws_iam_policy" "s3_fetch_policy" {
+  name        = "TILImageBucketFetchPolicy"
+  description = "Allows to get objects to the TIL Viewer Images bucket"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Effect = "Allow"
+        Resource = [
+          "${aws_s3_bucket.til-viewer.arn}",
+          "${aws_s3_bucket.til-viewer.arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_user_policy_attachment" "til_viewer_app_user_dynamodb_read_policy" {
+  user       = aws_iam_user.til_viewer_app_user.name
   policy_arn = aws_iam_policy.dynamodb_read_policy.arn
 }
 
-resource "aws_iam_access_key" "til_viewer_dynamodb_read_user_access_key" {
-  user = aws_iam_user.til_viewer_dynamodb_read_user.name
+resource "aws_iam_user_policy_attachment" "til_viewer_app_user_s3_fetch_policy" {
+  user       = aws_iam_user.til_viewer_app_user.name
+  policy_arn = aws_iam_policy.s3_fetch_policy.arn
+}
+
+resource "aws_iam_access_key" "til_viewer_app_user_access_key" {
+  user = aws_iam_user.til_viewer_app_user.name
 }
 output "til_viewer_dynamodb_access_key_id" {
-  value = aws_iam_access_key.til_viewer_dynamodb_read_user_access_key.id
+  value = aws_iam_access_key.til_viewer_app_user_access_key.id
 }
 
 output "til_viewer_dynamodb_secret_access_key" {
-  value     = aws_iam_access_key.til_viewer_dynamodb_read_user_access_key.secret
+  value     = aws_iam_access_key.til_viewer_app_user_access_key.secret
   sensitive = true
 }
 
@@ -129,7 +155,7 @@ resource "aws_iam_user_policy_attachment" "til_viewer_dynamodb_write_user_policy
 }
 
 resource "aws_iam_access_key" "til_viewer_dynamodb_write_user_access_key" {
-  user = aws_iam_user.til_viewer_dynamodb_read_user.name
+  user = aws_iam_user.til_viewer_app_user.name
 }
 
 output "til_viewer_dynamodb_write_access_key_id" {
