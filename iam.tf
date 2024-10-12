@@ -1,7 +1,7 @@
 # NOTE: IAMユーザーの作成
-# NOTE: "til_github_actions_user"はterraform内で参照するためのエイリアス
-resource "aws_iam_user" "til_github_actions_user" {
-  name = "til_github-actions-user"
+# NOTE: "upload_til_image_user"はterraform内で参照するためのエイリアス
+resource "aws_iam_user" "upload_til_image_user" {
+  name = "tupload_til_image_user"
 }
 
 # NOTE: S3へのアップロード用ポリシーの作成
@@ -28,14 +28,14 @@ resource "aws_iam_policy" "s3_operate_policy" {
 }
 
 # NOTE: IAMユーザーにポリシーをアタッチ
-resource "aws_iam_user_policy_attachment" "til_github_actions_user_policy" {
-  user       = aws_iam_user.til_github_actions_user.name
+resource "aws_iam_user_policy_attachment" "upload_til_image_user_policy" {
+  user       = aws_iam_user.upload_til_image_user.name
   policy_arn = aws_iam_policy.s3_operate_policy.arn
 }
 
 # NOTE: アクセスキーの作成
 resource "aws_iam_access_key" "github_actions_access_key" {
-  user = aws_iam_user.til_github_actions_user.name
+  user = aws_iam_user.upload_til_image_user.name
 }
 
 # NOTE: 出力でアクセスキーを表示
