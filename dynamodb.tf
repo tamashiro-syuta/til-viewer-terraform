@@ -6,7 +6,7 @@ resource "aws_dynamodb_table" "file-commits-table" {
 
   attribute {
     name = "date"
-    type = "S"
+    type = "N"
   }
 
   attribute {
