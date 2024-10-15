@@ -166,3 +166,75 @@ output "til_viewer_dynamodb_write_secret_access_key" {
   value     = aws_iam_access_key.til_viewer_dynamodb_write_user_access_key.secret
   sensitive = true
 }
+
+# ------------------------------------------------------------
+# NOTE: TIL-ViewerをデプロイするためのID Provider と IAM ROLE
+# ------------------------------------------------------------
+resource "aws_iam_openid_connect_provider" "deploy_actions" {
+  url             = "https://token.actions.githubusercontent.com"
+  client_id_list  = var.client_id_list
+  thumbprint_list = var.thumbprint_list
+}
+
+resource "aws_iam_role" "deploy_actions_role" {
+  name        = "deploy_actions_role"
+  description = "Allows to deploy TIL Viewer"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.deploy_actions.arn
+        },
+        Action = "sts:AssumeRoleWithWebIdentity",
+        Condition = {
+          StringLike = {
+            "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com",
+            "token.actions.githubusercontent.com:sub" : "repo:tamashiro-syuta/til-viewer:*",
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "til_viewer_deploy_policy" {
+  name = "TILViewerDeployPolicy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:*"
+        ],
+        Effect = "Allow",
+        Resource = [
+          "${aws_s3_bucket.til_viewer_app.arn}",
+          "${aws_s3_bucket.til_viewer_app.arn}/*"
+        ]
+      },
+      {
+        Action = [
+          "cloudfront:GetDistribution",
+          "cloudfront:GetDistributionConfig",
+          "cloudfront:ListDistributions",
+          "cloudfront:ListStreamingDistributions",
+          "cloudfront:CreateInvalidation",
+          "cloudfront:ListInvalidations",
+          "cloudfront:GetInvalidation",
+        ],
+        Effect = "Allow",
+        Resource = [
+          aws_cloudfront_distribution.til_viewer_app.arn
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "til_viewer_deploy_policy_attachment" {
+  role       = aws_iam_role.deploy_actions_role.name
+  policy_arn = aws_iam_policy.til_viewer_deploy_policy.arn
+}
