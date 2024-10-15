@@ -6,6 +6,9 @@
 # NOTE: "upload_til_image_user"はterraform内で参照するためのエイリアス
 resource "aws_iam_user" "upload_til_image_user" {
   name = "upload_til_image_user"
+  tags = {
+    Name = local.github_repository
+  }
 }
 
 # NOTE: S3へのアップロード用ポリシーの作成
@@ -29,6 +32,9 @@ resource "aws_iam_policy" "s3_operate_policy" {
       }
     ]
   })
+  tags = {
+    Name = local.github_repository
+  }
 }
 
 # NOTE: IAMユーザーにポリシーをアタッチ
@@ -57,6 +63,9 @@ output "upload_til_image_user_secret_access_key" {
 # ------------------------------------------------------------
 resource "aws_iam_user" "til_viewer_app_user" {
   name = "til_viewer_app_user"
+  tags = {
+    Name = local.github_repository
+  }
 }
 
 resource "aws_iam_policy" "dynamodb_read_policy" {
@@ -78,6 +87,9 @@ resource "aws_iam_policy" "dynamodb_read_policy" {
       }
     ]
   })
+  tags = {
+    Name = local.github_repository
+  }
 }
 
 resource "aws_iam_policy" "s3_fetch_policy" {
@@ -99,6 +111,10 @@ resource "aws_iam_policy" "s3_fetch_policy" {
       }
     ]
   })
+
+  tags = {
+    Name = local.github_repository
+  }
 }
 
 resource "aws_iam_user_policy_attachment" "til_viewer_app_user_dynamodb_read_policy" {
@@ -128,6 +144,10 @@ output "til_viewer_app_user_secret_access_key" {
 # ------------------------------------------------------------
 resource "aws_iam_user" "til_viewer_dynamodb_write_user" {
   name = "til_viewer_dynamodb_write_user"
+
+  tags = {
+    Name = local.github_repository
+  }
 }
 
 resource "aws_iam_policy" "dynamodb_write_policy" {
@@ -147,6 +167,10 @@ resource "aws_iam_policy" "dynamodb_write_policy" {
       }
     ]
   })
+
+  tags = {
+    Name = local.github_repository
+  }
 }
 
 resource "aws_iam_user_policy_attachment" "til_viewer_dynamodb_write_user_policy" {
@@ -174,6 +198,10 @@ resource "aws_iam_openid_connect_provider" "deploy_actions" {
   url             = "https://token.actions.githubusercontent.com"
   client_id_list  = var.client_id_list
   thumbprint_list = var.thumbprint_list
+
+  tags = {
+    Name = local.github_repository
+  }
 }
 
 resource "aws_iam_role" "deploy_actions_role" {
@@ -198,6 +226,10 @@ resource "aws_iam_role" "deploy_actions_role" {
       }
     ]
   })
+
+  tags = {
+    Name = local.github_repository
+  }
 }
 
 resource "aws_iam_policy" "til_viewer_deploy_policy" {
@@ -232,6 +264,10 @@ resource "aws_iam_policy" "til_viewer_deploy_policy" {
       }
     ]
   })
+
+  tags = {
+    Name = local.github_repository
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "til_viewer_deploy_policy_attachment" {

@@ -34,6 +34,10 @@ resource "aws_cloudfront_distribution" "til_viewer_app" {
       locations        = ["JP"]
     }
   }
+
+  tags = {
+    Name = local.github_repository
+  }
 }
 
 resource "aws_cloudfront_origin_access_control" "til_viewer_app" {

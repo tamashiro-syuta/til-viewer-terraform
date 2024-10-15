@@ -15,6 +15,6 @@ resource "aws_dynamodb_table" "file-commits-table" {
   }
 
   tags = {
-    Service = "til-viewer"
+    Name = local.github_repository
   }
 }

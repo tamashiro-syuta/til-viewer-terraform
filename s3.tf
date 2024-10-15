@@ -3,6 +3,10 @@
 # ------------------------------------------------------------
 resource "aws_s3_bucket" "til_viewer_images" {
   bucket = "til-viewer-images"
+
+  tags = {
+    Name = local.github_repository
+  }
 }
 
 # ------------------------------------------------------------
@@ -10,6 +14,9 @@ resource "aws_s3_bucket" "til_viewer_images" {
 # ------------------------------------------------------------
 resource "aws_s3_bucket" "til_viewer_app" {
   bucket = "til-viewer-app"
+  tags = {
+    Name = local.github_repository
+  }
 }
 
 
