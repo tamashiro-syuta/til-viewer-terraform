@@ -261,6 +261,16 @@ resource "aws_iam_policy" "til_viewer_deploy_policy" {
         Resource = [
           aws_cloudfront_distribution.til_viewer_app.arn
         ]
+      },
+      {
+        Action = [
+          "kms:GenerateDataKey",
+          "kms:Decrypt",
+        ],
+        Effect = "Allow",
+        Resource = [
+          aws_kms_key.til_viewer_app_kms_key.arn,
+        ]
       }
     ]
   })
