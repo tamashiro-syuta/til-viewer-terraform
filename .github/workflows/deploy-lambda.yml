@@ -16,14 +16,11 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: configure-aws-credentials
-        uses: aws-actions/configure-aws-credentials@master
+      - name: Configure AWS credentials with IAM Role
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: ${{ secrets.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_LAMBDA_ROLE_ARN }}
-
-      - name: get-caller-identity is allowed to run on role.
-        run: aws sts get-caller-identity
+          aws-region: ${{env.AWS_REGION}}
+          role-to-assume: ${{secrets.AWS_ROLE_ARN}}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
