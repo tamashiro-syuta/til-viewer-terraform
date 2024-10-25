@@ -1,20 +1,27 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import {
+  GetSecretValueCommand,
+  SecretsManagerClient,
+} from "@aws-sdk/client-secrets-manager";
+import { APIGatewayEvent, ProxyResult } from "aws-lambda";
 import { Octokit } from "@octokit/rest";
 import dayjs from "dayjs";
 import { v4 as uuidv4 } from "uuid";
 
-// DynamoDBの設定
-const dynamoDbClient = new DynamoDBClient({ region: "us-east-1" });
-
-// GitHubの設定
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN!,
-});
-
-// DynamoDBのテーブル名
+const REGION = "ap-northeast-1";
+const dynamoDbClient = new DynamoDBClient({ region: REGION });
 const TABLE_NAME = "file-commits-table";
 
-export const handler = async (_event: any) => {
+export const handler = async (event: APIGatewayEvent): Promise<ProxyResult> => {
+  const client = new SecretsManagerClient({ region: REGION });
+  const response = await client.send(
+    new GetSecretValueCommand({
+      SecretId: "GITHUB_TOKEN",
+    })
+  );
+
+  const secret = JSON.parse(response.SecretString!);
+  const octokit = new Octokit({ auth: secret.GITHUB_TOKEN });
   try {
     // 前日の開始・終了時間を取得（UTC）
     const yesterday = dayjs().subtract(1, "day");

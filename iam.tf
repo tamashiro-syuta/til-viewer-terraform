@@ -390,6 +390,15 @@ resource "aws_iam_policy" "adding_commits_lambda_execution_policy" {
         ],
         Effect   = "Allow",
         Resource = "*",
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+          "ssm:GetParametersByPath"
+        ],
+        Resource = "arn:aws:ssm:ap-northeast-1:093568989871:parameter/myapp/config/*"
       }
     ]
   })
