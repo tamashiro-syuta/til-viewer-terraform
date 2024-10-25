@@ -27,6 +27,9 @@ jobs:
           aws-region: ${{env.AWS_REGION}}
           role-to-assume: ${{secrets.AWS_LAMBDA_ROLE_ARN}}
 
+      - name: Change Directory
+        run: cd lambda
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -35,7 +38,6 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd lambda
           npm install
           npm run build
 
@@ -44,7 +46,7 @@ jobs:
 
       - name: Zip Lambda function
         run: |
-          cd lambda && zip -r ../lambda.zip .
+          zip -r ../lambda.zip .
 
       - name: Deploy Lambda function
         run: |
