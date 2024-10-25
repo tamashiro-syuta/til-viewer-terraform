@@ -51,7 +51,7 @@ jobs:
 
       - name: Zip Lambda function
         run: |
-          zip -r ./lambda.zip .
+          zip -r ./lambda.zip ./dist
 
       - name: Deploy Lambda function
         run: |
