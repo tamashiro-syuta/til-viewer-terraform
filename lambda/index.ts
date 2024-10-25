@@ -54,6 +54,7 @@ export const handler = async ({
     const data = await githubResponse.json();
 
     console.log("Data:", data);
+
     if (!Array.isArray(data)) {
       throw new Error("GitHub API response is not an array");
     }
@@ -69,12 +70,13 @@ export const handler = async ({
     }
 
     const commitCount = data.length;
+    console.log("commitCount:", commitCount);
 
     // NOTE: DynamoDBにレコードを保存
     const putParams = {
       TableName: TABLE_NAME,
       Item: {
-        date: { S: dateInstance.format("YYYYMMDD") },
+        date: { N: dateInstance.format("YYYYMMDD") },
         path: { S: uuidv4() }, // NOTE: pathはもう必要ないからランダムな値を入れている
         commitCount: { N: commitCount.toString() },
       },
