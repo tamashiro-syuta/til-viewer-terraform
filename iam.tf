@@ -286,7 +286,7 @@ resource "aws_iam_role_policy_attachment" "til_viewer_deploy_policy_attachment" 
 }
 
 # ------------------------------------------------------------
-# NOTE: lambdaの実行に必要なIAM ROLE(ID Providerは既存のものを使う)
+# NOTE: lambdaのデプロイに必要なIAM ROLE(ID Providerは既存のものを使う)
 # ------------------------------------------------------------
 resource "aws_iam_role" "adding_commits_lambda_deploy_actions_role" {
   name        = "adding_commits_lambda_deploy_actions_role"
@@ -316,6 +316,36 @@ resource "aws_iam_role" "adding_commits_lambda_deploy_actions_role" {
   }
 }
 
+resource "aws_iam_policy" "adding_commits_lambda_deploy_policy" {
+  name = "AddingCommitsLanmdaDeployPolicy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "lambda:UpdateFunctionCode",
+          "lambda:GetFunction",
+          "lambda:UpdateFunctionConfiguration"
+        ]
+        Resource = aws_lambda_function.adding_commits_lambda.arn
+      }
+    ]
+  })
+
+  tags = {
+    Name = local.github_repository
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "adding_commits_lambda_deploy_policy_attachment" {
+  role       = aws_iam_role.adding_commits_lambda_deploy_actions_role.name
+  policy_arn = aws_iam_policy.adding_commits_lambda_deploy_policy.arn
+}
+
+# ------------------------------------------------------------
+# NOTE: lambdaの実行に必要なIAM ROLE(ID Providerは既存のものを使う)
+# ------------------------------------------------------------
 resource "aws_iam_role" "adding_commits_lambda_execution_role" {
   name        = "adding_commits_lambda_execution_role"
   description = "Allows to execute Lambda For Batch Adding TIL Commit"
@@ -338,8 +368,8 @@ resource "aws_iam_role" "adding_commits_lambda_execution_role" {
   }
 }
 
-resource "aws_iam_policy" "adding_commits_lambda_deploy_policy" {
-  name = "AddingCommitsLanmdaDeployPolicy"
+resource "aws_iam_policy" "adding_commits_lambda_execution_policy" {
+  name = "AddingCommitsLanmdaExecutionPolicy"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -360,16 +390,6 @@ resource "aws_iam_policy" "adding_commits_lambda_deploy_policy" {
         ],
         Effect   = "Allow",
         Resource = "*",
-      },
-      {
-        Action = [
-          "kms:GenerateDataKey",
-          "kms:Decrypt",
-        ],
-        Effect = "Allow",
-        Resource = [
-          aws_kms_key.til_viewer_app_kms_key.arn,
-        ]
       }
     ]
   })
@@ -379,12 +399,7 @@ resource "aws_iam_policy" "adding_commits_lambda_deploy_policy" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "adding_commits_lambda_deploy_policy_attachment" {
-  role       = aws_iam_role.adding_commits_lambda_deploy_actions_role.name
-  policy_arn = aws_iam_policy.adding_commits_lambda_deploy_policy.arn
-}
-
 resource "aws_iam_role_policy_attachment" "adding_commits_lambda_execution_policy_attachment" {
   role       = aws_iam_role.adding_commits_lambda_execution_role.name
-  policy_arn = aws_iam_policy.adding_commits_lambda_deploy_policy.arn
+  policy_arn = aws_iam_policy.adding_commits_lambda_execution_policy.arn
 }
