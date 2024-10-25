@@ -27,6 +27,7 @@ jobs:
         run: |
           aws lambda invoke \
             --function-name AddingCommitsLambda \
+            --cli-binary-format raw-in-base64-out \
             --payload '{"dateString": "'$DATE'"}' \
             response.json
-          cat response.json
+          cat response.json | jq
