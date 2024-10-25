@@ -6,12 +6,16 @@ on:
       - 'lambda/**'
       - '.github/workflows/deploy-lambda.yml'
 
+env:
+  AWS_REGION: 'ap-northeast-1'
+
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
 
     steps:
       - name: checkout
