@@ -31,6 +31,6 @@ jobs:
           aws lambda invoke \
             --function-name AddingCommitsLambda \
             --cli-binary-format raw-in-base64-out \
-            --payload '{"dateString": "'${{ env.YESTERDAY }}'"}' \
+            --payload '{"dateString": "'${{ env.YESTERDAY }}'", "secretId": "'${{secrets.AWS_SECRETS_MANAGER_ARN}}'"}' \
             response.json
           cat response.json | jq

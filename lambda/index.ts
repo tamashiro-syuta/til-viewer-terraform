@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 
 type Argument = {
   dateString: string; // NOTE: 'YYYY-MM-DD' 形式の文字列
+  secretId: string;
 };
 
 const REGION = "ap-northeast-1";
@@ -17,12 +18,11 @@ const TABLE_NAME = "file-commits-table";
 
 export const handler = async ({
   dateString,
+  secretId,
 }: Argument): Promise<ProxyResult> => {
   const client = new SecretsManagerClient({ region: REGION });
   const response = await client.send(
-    new GetSecretValueCommand({
-      SecretId: "GITHUB_TOKEN",
-    })
+    new GetSecretValueCommand({ SecretId: secretId })
   );
 
   const secret = JSON.parse(response.SecretString!);
