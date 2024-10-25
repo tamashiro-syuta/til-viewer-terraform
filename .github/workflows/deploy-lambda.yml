@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Change Directory
+        run: cd lambda
+
       - name: checkout
         uses: actions/checkout@v3
 
@@ -26,9 +29,6 @@ jobs:
         with:
           aws-region: ${{env.AWS_REGION}}
           role-to-assume: ${{secrets.AWS_LAMBDA_ROLE_ARN}}
-
-      - name: Change Directory
-        run: cd lambda
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
