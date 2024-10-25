@@ -20,7 +20,6 @@
     "inlineSources": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
-    "types": ["bun-types"],
     "skipLibCheck": true,
     "esModuleInterop": true
   },
