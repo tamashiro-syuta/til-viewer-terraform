@@ -30,12 +30,6 @@ jobs:
           aws-region: ${{env.AWS_REGION}}
           role-to-assume: ${{secrets.AWS_LAMBDA_ROLE_ARN}}
 
-      - name: check working directory
-        run: pwd
-
-      - name: check contents
-        run: ls -al
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
