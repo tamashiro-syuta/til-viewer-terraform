@@ -26,11 +26,20 @@ jobs:
         id: date
         run: echo "YESTERDAY=$(date -d 'yesterday' '+%Y-%m-%d')" >> $GITHUB_ENV
 
+      # - name: Invoke Lambda function
+      #   run: |
+      #     aws lambda invoke \
+      #       --function-name AddingCommitsLambda \
+      #       --cli-binary-format raw-in-base64-out \
+      #       --payload '{"dateString": "'${{ env.YESTERDAY }}'", "secretId": "'${{secrets.AWS_SECRETS_MANAGER_ARN}}'"}' \
+      #       response.json
+      #     cat response.json | jq
+
       - name: Invoke Lambda function
         run: |
           aws lambda invoke \
             --function-name AddingCommitsLambda \
             --cli-binary-format raw-in-base64-out \
-            --payload '{"dateString": "'${{ env.YESTERDAY }}'", "secretId": "'${{secrets.AWS_SECRETS_MANAGER_ARN}}'"}' \
+            --payload '{"dateString": "2024-10-16", "secretId": "'${{secrets.AWS_SECRETS_MANAGER_ARN}}'"}' \
             response.json
           cat response.json | jq
