@@ -3,16 +3,22 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import { APIGatewayEvent, ProxyResult } from "aws-lambda";
+import { ProxyResult } from "aws-lambda";
 import { Octokit } from "@octokit/rest";
 import dayjs from "dayjs";
 import { v4 as uuidv4 } from "uuid";
+
+type Argument = {
+  dateString: string; // NOTE: 'YYYY-MM-DD' 形式の文字列
+};
 
 const REGION = "ap-northeast-1";
 const dynamoDbClient = new DynamoDBClient({ region: REGION });
 const TABLE_NAME = "file-commits-table";
 
-export const handler = async (event: APIGatewayEvent): Promise<ProxyResult> => {
+export const handler = async ({
+  dateString,
+}: Argument): Promise<ProxyResult> => {
   const client = new SecretsManagerClient({ region: REGION });
   const response = await client.send(
     new GetSecretValueCommand({
@@ -24,9 +30,9 @@ export const handler = async (event: APIGatewayEvent): Promise<ProxyResult> => {
   const octokit = new Octokit({ auth: secret.GITHUB_TOKEN });
   try {
     // 前日の開始・終了時間を取得（UTC）
-    const yesterday = dayjs().subtract(1, "day");
-    const since = yesterday.startOf("day").toISOString();
-    const until = yesterday.endOf("day").toISOString();
+    const dateInstance = dayjs(dateString);
+    const since = dateInstance.startOf("day").toISOString();
+    const until = dateInstance.endOf("day").toISOString();
 
     // GitHub APIを使って、前日のコミットを取得
     const response = await octokit.rest.repos.listCommits({
@@ -42,7 +48,7 @@ export const handler = async (event: APIGatewayEvent): Promise<ProxyResult> => {
     const putParams = {
       TableName: TABLE_NAME,
       Item: {
-        date: { S: yesterday.format("YYYYMMDD") },
+        date: { S: dateInstance.format("YYYYMMDD") },
         path: { S: uuidv4() }, // NOTE: pathはもう必要ないからランダムな値を入れている
         commitCount: { N: commitCount.toString() },
       },
