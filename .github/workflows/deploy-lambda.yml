@@ -16,6 +16,9 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lambda
 
     steps:
       - name: checkout
@@ -26,9 +29,6 @@ jobs:
         with:
           aws-region: ${{env.AWS_REGION}}
           role-to-assume: ${{secrets.AWS_LAMBDA_ROLE_ARN}}
-
-      - name: Change Directory
-        run: cd lambda
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
