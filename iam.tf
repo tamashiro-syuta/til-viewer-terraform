@@ -284,3 +284,107 @@ resource "aws_iam_role_policy_attachment" "til_viewer_deploy_policy_attachment" 
   role       = aws_iam_role.deploy_actions_role.name
   policy_arn = aws_iam_policy.til_viewer_deploy_policy.arn
 }
+
+# ------------------------------------------------------------
+# NOTE: lambdaの実行に必要なIAM ROLE(ID Providerは既存のものを使う)
+# ------------------------------------------------------------
+resource "aws_iam_role" "adding_commits_lambda_deploy_actions_role" {
+  name        = "adding_commits_lambda_deploy_actions_role"
+  description = "Allows to deploy Lambda For Batch Adding TIL Commit"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.deploy_actions.arn
+        },
+        Action = "sts:AssumeRoleWithWebIdentity",
+        Condition = {
+          StringLike = {
+            "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com",
+            "token.actions.githubusercontent.com:sub" : "repo:tamashiro-syuta/til-viewer-terraform:*",
+          }
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = local.github_repository
+  }
+}
+
+resource "aws_iam_role" "adding_commits_lambda_execution_role" {
+  name        = "adding_commits_lambda_execution_role"
+  description = "Allows to execute Lambda For Batch Adding TIL Commit"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = {
+    Name = local.github_repository
+  }
+}
+
+resource "aws_iam_policy" "adding_commits_lambda_deploy_policy" {
+  name = "AddingCommitsLanmdaDeployPolicy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:GetItem"
+        ],
+        Effect   = "Allow",
+        Resource = "${aws_dynamodb_table.file-commits-table.arn}",
+      },
+      {
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Effect   = "Allow",
+        Resource = "*",
+      },
+      {
+        Action = [
+          "kms:GenerateDataKey",
+          "kms:Decrypt",
+        ],
+        Effect = "Allow",
+        Resource = [
+          aws_kms_key.til_viewer_app_kms_key.arn,
+        ]
+      }
+    ]
+  })
+
+  tags = {
+    Name = local.github_repository
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "adding_commits_lambda_deploy_policy_attachment" {
+  role       = aws_iam_role.adding_commits_lambda_deploy_actions_role.name
+  policy_arn = aws_iam_policy.adding_commits_lambda_deploy_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "adding_commits_lambda_execution_policy_attachment" {
+  role       = aws_iam_role.adding_commits_lambda_execution_role.name
+  policy_arn = aws_iam_policy.adding_commits_lambda_deploy_policy.arn
+}
