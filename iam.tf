@@ -359,6 +359,19 @@ resource "aws_iam_role" "adding_commits_lambda_execution_role" {
           Service = "lambda.amazonaws.com"
         },
         Action = "sts:AssumeRole"
+      },
+      {
+        Effect = "Allow",
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.deploy_actions.arn
+        },
+        Action = "sts:AssumeRoleWithWebIdentity",
+        Condition = {
+          StringLike = {
+            "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com",
+            "token.actions.githubusercontent.com:sub" : "repo:tamashiro-syuta/til-viewer-terraform:*",
+          }
+        }
       }
     ]
   })
