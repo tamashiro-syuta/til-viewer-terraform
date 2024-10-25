@@ -455,7 +455,6 @@ resource "aws_iam_policy" "adding_commits_lambda_execution_policy" {
         ],
         Resource = [
           "${aws_secretsmanager_secret.adding_commits_lambda_secret.arn}",
-          "${aws_secretsmanager_secret.adding_commits_lambda_secret.arn}-*",
         ]
       }
     ]
