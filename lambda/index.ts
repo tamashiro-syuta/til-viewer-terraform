@@ -52,6 +52,9 @@ export const handler = async ({
     }
 
     const data = await githubResponse.json();
+
+    console.log("Data:", data);
+
     const commitCount = (data as any).length;
 
     // NOTE: DynamoDBにレコードを保存
@@ -60,7 +63,7 @@ export const handler = async ({
       Item: {
         date: { S: dateInstance.format("YYYYMMDD") },
         path: { S: uuidv4() }, // NOTE: pathはもう必要ないからランダムな値を入れている
-        commitCount: { N: commitCount.toString() },
+        commitCount: { N: commitCount },
       },
     };
 
