@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'lambda/**'
+      - '.github/workflows/deploy-lambda.yml'
 
 jobs:
   deploy:
