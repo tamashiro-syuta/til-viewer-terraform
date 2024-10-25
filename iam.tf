@@ -344,6 +344,63 @@ resource "aws_iam_role_policy_attachment" "adding_commits_lambda_deploy_policy_a
 }
 
 # ------------------------------------------------------------
+# NOTE: lambdaの呼び出しに必要なIAM ROLE(ID Providerは既存のものを使う)
+# ------------------------------------------------------------
+resource "aws_iam_role" "adding_commits_lambda_invoke_role" {
+  name        = "adding_commits_lambda_invoke_role"
+  description = "Allows to invoke Lambda For Batch Adding TIL Commit"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.deploy_actions.arn
+        },
+        Action = "sts:AssumeRoleWithWebIdentity",
+        Condition = {
+          StringLike = {
+            "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com",
+            "token.actions.githubusercontent.com:sub" : "repo:tamashiro-syuta/til-viewer-terraform:*",
+          }
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = local.github_repository
+  }
+}
+
+resource "aws_iam_policy" "adding_commits_lambda_invoke_policy" {
+  name = "AddingCommitsLanmdaInvokePolicy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "lambda:InvokeFunction",
+        ]
+        Resource = aws_lambda_function.adding_commits_lambda.arn
+      }
+    ]
+  })
+
+  tags = {
+    Name = local.github_repository
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "adding_commits_lambda_invoke_policy_attachment" {
+  role       = aws_iam_role.adding_commits_lambda_invoke_role.name
+  policy_arn = aws_iam_policy.adding_commits_lambda_invoke_policy.arn
+}
+
+
+# ------------------------------------------------------------
 # NOTE: lambdaの実行に必要なIAM ROLE(ID Providerは既存のものを使う)
 # ------------------------------------------------------------
 resource "aws_iam_role" "adding_commits_lambda_execution_role" {
@@ -359,19 +416,6 @@ resource "aws_iam_role" "adding_commits_lambda_execution_role" {
           Service = "lambda.amazonaws.com"
         },
         Action = "sts:AssumeRole"
-      },
-      {
-        Effect = "Allow",
-        Principal = {
-          Federated = aws_iam_openid_connect_provider.deploy_actions.arn
-        },
-        Action = "sts:AssumeRoleWithWebIdentity",
-        Condition = {
-          StringLike = {
-            "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com",
-            "token.actions.githubusercontent.com:sub" : "repo:tamashiro-syuta/til-viewer-terraform:*",
-          }
-        }
       }
     ]
   })
@@ -409,7 +453,10 @@ resource "aws_iam_policy" "adding_commits_lambda_execution_policy" {
         Action = [
           "secretsmanager:GetSecretValue",
         ],
-        Resource = aws_secretsmanager_secret.adding_commits_lambda_secret.arn
+        Resource = [
+          "${aws_secretsmanager_secret.adding_commits_lambda_secret.arn}",
+          "${aws_secretsmanager_secret.adding_commits_lambda_secret.arn}-*",
+        ]
       }
     ]
   })
