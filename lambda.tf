@@ -4,6 +4,7 @@ resource "aws_lambda_function" "adding_commits_lambda" {
   role          = aws_iam_role.adding_commits_lambda_execution_role.arn
   handler       = "index.handler"
   runtime       = "nodejs20.x"
+  timeout       = 30
 
   environment {
     variables = {
