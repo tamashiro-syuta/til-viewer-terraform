@@ -26,25 +26,35 @@ export const handler = async ({
   );
 
   const secret = JSON.parse(response.SecretString!);
-  const { Octokit } = await import("@octokit/rest"); // NOTE: commonjsのimportを使うために、import()を使っている
-  const octokit = new Octokit({ auth: secret.GITHUB_TOKEN });
   try {
-    // 前日の開始・終了時間を取得（UTC）
+    // NOTE: 前日の開始・終了時間を取得（UTC）
     const dateInstance = dayjs(dateString);
     const since = dateInstance.startOf("day").toISOString();
     const until = dateInstance.endOf("day").toISOString();
 
-    // GitHub APIを使って、前日のコミットを取得
-    const response = await octokit.rest.repos.listCommits({
-      owner: "tamashiro-syuta",
-      repo: "TIL",
-      since,
-      until,
+    // NOTE: GitHub APIを直接呼び出して、前日のコミットを取得
+    const url = `https://api.github.com/repos/tamashiro-syuta/TIL/commits?since=${encodeURIComponent(
+      since
+    )}&until=${encodeURIComponent(until)}`;
+
+    const githubResponse = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `token ${secret.GITHUB_TOKEN}`,
+        Accept: "application/vnd.github.v3+json",
+      },
     });
 
-    const commitCount = response.data.length;
+    if (!githubResponse.ok) {
+      throw new Error(
+        `GitHub API error: ${githubResponse.status} ${githubResponse.statusText}`
+      );
+    }
 
-    // DynamoDBにレコードを保存
+    const data = await githubResponse.json();
+    const commitCount = (data as any).length;
+
+    // NOTE: DynamoDBにレコードを保存
     const putParams = {
       TableName: TABLE_NAME,
       Item: {
