@@ -7,7 +7,6 @@ on:
 
 env:
   AWS_REGION: 'ap-northeast-1'
-  DATE: $(date -d "yesterday" +%Y-%m-%d)
 
 permissions:
   id-token: write
@@ -23,11 +22,15 @@ jobs:
           aws-region: ${{env.AWS_REGION}}
           role-to-assume: ${{secrets.AWS_LAMBDA_ROLE_ARN}}
 
+      - name: Get yesterday's date
+        id: date
+        run: echo "YESTERDAY=$(date -d 'yesterday' '+%Y-%m-%d')" >> $GITHUB_ENV
+
       - name: Invoke Lambda function
         run: |
           aws lambda invoke \
             --function-name AddingCommitsLambda \
             --cli-binary-format raw-in-base64-out \
-            --payload '{"dateString": "'$DATE'"}' \
+            --payload '{"dateString": "'${{ env.YESTERDAY }}'"}' \
             response.json
           cat response.json | jq
