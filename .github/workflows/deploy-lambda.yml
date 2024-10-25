@@ -28,7 +28,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{env.AWS_REGION}}
-          role-to-assume: ${{secrets.AWS_LAMBDA_ROLE_ARN}}
+          role-to-assume: ${{secrets.AWS_LAMBDA_DEPLOY_ROLE_ARN}}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
