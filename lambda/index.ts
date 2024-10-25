@@ -4,7 +4,6 @@ import {
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
 import { ProxyResult } from "aws-lambda";
-import { Octokit } from "@octokit/rest";
 import dayjs from "dayjs";
 import { v4 as uuidv4 } from "uuid";
 
@@ -27,6 +26,7 @@ export const handler = async ({
   );
 
   const secret = JSON.parse(response.SecretString!);
+  const { Octokit } = await import("@octokit/rest"); // NOTE: commonjsのimportを使うために、import()を使っている
   const octokit = new Octokit({ auth: secret.GITHUB_TOKEN });
   try {
     // 前日の開始・終了時間を取得（UTC）
