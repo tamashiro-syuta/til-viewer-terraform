@@ -1,0 +1,49 @@
+name: Deploy Adding Commits Lambda on Push
+
+on:
+  push:
+    paths:
+      - 'lambda/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: configure-aws-credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_LAMBDA_ROLE_ARN }}
+
+      - name: get-caller-identity is allowed to run on role.
+        run: aws sts get-caller-identity
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install Dependencies
+        run: |
+          cd lambda
+          npm install
+          npm run build
+
+      - name: Move node_modules to dist
+        run: mv node_modules dist/node_modules
+
+      - name: Zip Lambda function
+        run: |
+          cd lambda && zip -r ../lambda.zip .
+
+      - name: Deploy Lambda function
+        run: |
+          aws lambda update-function-code --function-name AddingCommitsLambda --zip-file fileb://lambda.zip --publish
