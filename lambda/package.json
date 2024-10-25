@@ -1,0 +1,26 @@
+{
+  "name": "lambda",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "esbuild": "ts-node esbuild.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.674.0",
+    "@aws-sdk/lib-dynamodb": "^3.675.0",
+    "@octokit/rest": "^21.0.2",
+    "aws-lambda": "^1.0.7",
+    "axios": "^1.7.7",
+    "dayjs": "^1.11.13"
+  },
+  "resolutions": {
+    "bun-types": "1.0.24"
+  }
+}
