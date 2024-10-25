@@ -4,7 +4,7 @@ resource "aws_secretsmanager_secret" "adding_commits_lambda_secret" {
 }
 
 resource "aws_secretsmanager_secret_version" "api_secret_version" {
-  secret_id     = aws_secretsmanager_secret.adding_commits_lambda_secret.id
+  secret_id = aws_secretsmanager_secret.adding_commits_lambda_secret.id
   secret_string = jsonencode({
     GITHUB_TOKEN = var.github_token
   })
